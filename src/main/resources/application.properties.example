@@ -1,0 +1,8 @@
+spring.datasource.url=jdbc:mysql://localhost/solomvp?serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password= // TODO Password here!
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.database=mysql
+
+spring.data.rest.basePath=/api
