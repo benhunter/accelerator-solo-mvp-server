@@ -53,7 +53,7 @@ public class AlarmChecker {
     public void checkSingleAlarm(Alarm alarm) {
         String message = "{\"content\":\"Hello discord\"}";
 
-        // TODO send the messge to Discord only if alarm.target is down.
+        // TODO send the message to Discord only if alarm.target is down.
         RequestEntity<String> request = RequestEntity.post(alarm.getWebhook())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(message);
