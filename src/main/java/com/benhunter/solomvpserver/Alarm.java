@@ -18,4 +18,6 @@ public class Alarm {
     private String action = "HTTP";  // The type of service to monitor.
     private Integer intervalSeconds = 1;  // Interval in seconds between checks.
     private String webhook;  // The discord webhook where alarms will be sent.
+    private Boolean targetStatusUp = true;  // True when the target is up.
+    private Boolean didNotify = false;  // Whether the webhook was sent to notify change of status. TODO: remove?
 }
