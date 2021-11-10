@@ -18,7 +18,9 @@ public class AlarmChecker {
 
     private static final Logger log = LoggerFactory.getLogger(AlarmChecker.class);
 
-    private AlarmRepository repository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private final AlarmRepository repository;
 
     AlarmChecker(AlarmRepository repository) {
         this.repository = repository;
@@ -34,19 +36,17 @@ public class AlarmChecker {
     public void checkAlarms() {
 
         for (Alarm alarm : this.repository.findAll()) {
-            log.info("Checking alarm id: " + alarm.getId()
-                    + " name: " + alarm.getName()
-            );
-            checkSingleAlarm(alarm);
+            if (alarm.getEnabled()) {
+                log.info("Checking alarm id: " + alarm.getId()
+                        + " name: " + alarm.getName()
+                );
+                checkSingleAlarm(alarm);
+            }
         }
     }
 
-
-    private final RestTemplate restTemplate = new RestTemplate();
-
     public void checkSingleAlarm(Alarm alarm) {
         boolean targetIsDown = false;  // Flag for the status of alarm.target. Determines whether the webhook executes.
-
 
         // Send a request to alarm.target and check the response code.
         try {
@@ -57,11 +57,11 @@ public class AlarmChecker {
                 targetIsDown = true;
             }
         } catch (Exception e) {
-            log.info("Exception: " + e.getMessage());
+            log.info("Exception while checking target of alarm id: " + alarm.getId() + " Exception: " + e.getMessage());
             targetIsDown = true;
         }
 
-        // Send the message to Discord only if alarm.target is down, but was up last time it was checked.
+        // Target is down, but was up last time it was checked.
         if (targetIsDown && alarm.getTargetStatusUp()) {
             final String messageTargetDown = "{\"content\":\"" + alarm.getName() + " is down! \"}";
 
@@ -70,16 +70,21 @@ public class AlarmChecker {
             RequestEntity<String> webhookRequest = RequestEntity.post(alarm.getWebhook())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(messageTargetDown);
-            restTemplate.exchange(webhookRequest, Void.class);  // Not doing anything with the response.
+            try {
+                restTemplate.exchange(webhookRequest, Void.class);  // Not doing anything with the response.
+            } catch (IllegalArgumentException exception) {
+                log.info("Bad webhook URL provided for alarm id: " + alarm.getId().toString() + " Exception: " + exception.getMessage());
+            }
 
             // Update the alarm.
             alarm.setTargetStatusUp(false);
             this.repository.save(alarm);
+            return;
         } else {
             if (targetIsDown) {
-                log.info("Target was already down. Not sending webhook for alarm name: " + alarm.getName());
+                log.debug("Target was already down. Not sending webhook for alarm name: " + alarm.getName());
             } else {
-                log.info("Target is up. Not sending webhook for alarm name: " + alarm.getName());
+                log.debug("Target is up. Not sending webhook for alarm name: " + alarm.getName());
             }
         }
 

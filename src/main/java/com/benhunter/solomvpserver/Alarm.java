@@ -20,4 +20,5 @@ public class Alarm {
     private String webhook;  // The discord webhook where alarms will be sent.
     private Boolean targetStatusUp = true;  // True when the target is up.
     private Boolean didNotify = false;  // Whether the webhook was sent to notify change of status. TODO: remove?
+    private Boolean enabled = true;
 }
