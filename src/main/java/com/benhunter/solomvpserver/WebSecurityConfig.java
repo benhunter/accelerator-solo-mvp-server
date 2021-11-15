@@ -1,16 +1,23 @@
 package com.benhunter.solomvpserver;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
@@ -18,12 +25,23 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
-                .username("user")
-                .password("password")
+        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+        UserDetails alice = userBuilder
+                .username("alice")
+                .password("wonderland")
                 .roles("USER")
                 .build();
-        return new InMemoryUserDetailsManager(user);
+        UserDetails bob = userBuilder
+                .username("bob")
+                .password("thebuilder")
+                .roles("USER")
+                .build();
+        UserDetails admin = userBuilder
+                .username("admin")
+                .password("nimda")
+                .roles("ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(alice, bob, admin);
     }
 
     // Single HttpSecurity config to allow all requests.
@@ -100,5 +118,35 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 //    }
      */
+
+
+
+
+    // Setup for persistent users.
+//    @Autowired
+//    public DataSource dataSource;
+//
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception
+//    {
+//        auth.userDetailsService(jdbcUserDetailsManager()).passwordEncoder(passwordEncoder());
+//    }
+//
+//    @Bean
+//    public JdbcUserDetailsManager jdbcUserDetailsManager()
+//    {
+//        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
+//        jdbcUserDetailsManager.setDataSource(dataSource);
+//
+//        return jdbcUserDetailsManager;
+//    }
+//
+//    @Bean
+//    public PasswordEncoder passwordEncoder()
+//    {
+//        return new BCryptPasswordEncoder();
+//    }
+
+
 
 }
