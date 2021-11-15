@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -76,8 +77,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
 
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())  // TODO do I need the formLogin?
+//                .httpBasic(Customizer.withDefaults())
+                .httpBasic().and()
+//                .formLogin(Customizer.withDefaults())  // TODO do I need the formLogin?
                 .cors().and()
                 .csrf().disable();
     }
@@ -138,13 +140,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
         jdbcUserDetailsManager.setDataSource(dataSource);
 
-        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+        User.UserBuilder userBuilder = User.builder();
         UserDetails alice = userBuilder
                 .username("alice")
-                .password("wonderland")
+//                .password("wonderland")
+                .password("{bcrypt}$2a$10$LJ1cheyBg/pn8f0uNYUhce4BI/BwZr4XLvz6t3fy1K8Bl/buzud8O")
+                // {bcrypt}$2a$10$LJ1cheyBg/pn8f0uNYUhce4BI/BwZr4XLvz6t3fy1K8Bl/buzud8O
                 .roles("USER")
                 .build();
-        jdbcUserDetailsManager.createUser(alice);
+        if (!jdbcUserDetailsManager.userExists(alice.getUsername())) {
+            jdbcUserDetailsManager.createUser(alice);
+        }
 
         return jdbcUserDetailsManager;
     }
@@ -154,7 +160,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     {
         return new BCryptPasswordEncoder();
     }
-
-
 
 }
