@@ -26,10 +26,42 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return new InMemoryUserDetailsManager(user);
     }
 
-    // Single HttpSecurity config
+    // Single HttpSecurity config to allow all requests.
+    // CSRF is enabled by default.
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http.authorizeRequests().anyRequest().permitAll();
+//    }
+
+    // Single HttpSecurity config to allow all requests.
+    // Explicitly disabling CSRF protection.
+//    @Override
+//    protected void configure(HttpSecurity http) throws Exception {
+//        http
+//                .authorizeRequests().anyRequest().permitAll()
+//                .and()
+//                .csrf().disable()
+//        ;
+//    }
+
+    // Single HttpSecurity config to allow OPTION and require authentication everywhere else.
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().permitAll();
+        http
+                // Manual method to allow CORS Preflight checks from web browsers.
+//                .authorizeRequests()
+//                .antMatchers(HttpMethod.OPTIONS, "/api/alarms/**").permitAll()
+//                .and()
+
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated()
+                .and()
+
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults())  // TODO do I need the formLogin?
+                .cors().and()
+                .csrf().disable();
     }
 
     /*
