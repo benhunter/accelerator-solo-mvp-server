@@ -23,26 +23,26 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
-        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
-        UserDetails alice = userBuilder
-                .username("alice")
-                .password("wonderland")
-                .roles("USER")
-                .build();
-        UserDetails bob = userBuilder
-                .username("bob")
-                .password("thebuilder")
-                .roles("USER")
-                .build();
-        UserDetails admin = userBuilder
-                .username("admin")
-                .password("nimda")
-                .roles("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(alice, bob, admin);
-    }
+//    @Bean
+//    public InMemoryUserDetailsManager userDetailsService() {
+//        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+//        UserDetails alice = userBuilder
+//                .username("alice")
+//                .password("wonderland")
+//                .roles("USER")
+//                .build();
+//        UserDetails bob = userBuilder
+//                .username("bob")
+//                .password("thebuilder")
+//                .roles("USER")
+//                .build();
+//        UserDetails admin = userBuilder
+//                .username("admin")
+//                .password("nimda")
+//                .roles("ADMIN")
+//                .build();
+//        return new InMemoryUserDetailsManager(alice, bob, admin);
+//    }
 
     // Single HttpSecurity config to allow all requests.
     // CSRF is enabled by default.
@@ -123,29 +123,37 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     // Setup for persistent users.
-//    @Autowired
-//    public DataSource dataSource;
-//
-//    @Override
-//    protected void configure(AuthenticationManagerBuilder auth) throws Exception
-//    {
-//        auth.userDetailsService(jdbcUserDetailsManager()).passwordEncoder(passwordEncoder());
-//    }
-//
-//    @Bean
-//    public JdbcUserDetailsManager jdbcUserDetailsManager()
-//    {
-//        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
-//        jdbcUserDetailsManager.setDataSource(dataSource);
-//
-//        return jdbcUserDetailsManager;
-//    }
-//
-//    @Bean
-//    public PasswordEncoder passwordEncoder()
-//    {
-//        return new BCryptPasswordEncoder();
-//    }
+    @Autowired
+    public DataSource dataSource;
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception
+    {
+        auth.userDetailsService(jdbcUserDetailsManager()).passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    public JdbcUserDetailsManager jdbcUserDetailsManager()
+    {
+        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
+        jdbcUserDetailsManager.setDataSource(dataSource);
+
+        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+        UserDetails alice = userBuilder
+                .username("alice")
+                .password("wonderland")
+                .roles("USER")
+                .build();
+        jdbcUserDetailsManager.createUser(alice);
+
+        return jdbcUserDetailsManager;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder()
+    {
+        return new BCryptPasswordEncoder();
+    }
 
 
 
