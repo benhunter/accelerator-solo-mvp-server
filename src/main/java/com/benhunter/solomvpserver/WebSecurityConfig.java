@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
@@ -24,26 +25,28 @@ import javax.sql.DataSource;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-//    @Bean
-//    public InMemoryUserDetailsManager userDetailsService() {
-//        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
-//        UserDetails alice = userBuilder
-//                .username("alice")
-//                .password("wonderland")
-//                .roles("USER")
-//                .build();
-//        UserDetails bob = userBuilder
-//                .username("bob")
-//                .password("thebuilder")
-//                .roles("USER")
-//                .build();
-//        UserDetails admin = userBuilder
-//                .username("admin")
-//                .password("nimda")
-//                .roles("ADMIN")
-//                .build();
-//        return new InMemoryUserDetailsManager(alice, bob, admin);
-//    }
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService() {
+        User.UserBuilder userBuilder = User.withDefaultPasswordEncoder();
+        UserDetails alice = userBuilder
+                .username("alice")
+                .password("wonderland")
+                .roles("USER")
+                .build();
+        UserDetails bob = userBuilder
+                .username("bob")
+                .password("thebuilder")
+                .roles("USER")
+                .build();
+        UserDetails admin = userBuilder
+                .username("admin")
+                .password("nimda")
+                .roles("ADMIN")
+                .build();
+        return new InMemoryUserDetailsManager(alice, bob, admin);
+    }
+
+
 
     // Single HttpSecurity config to allow all requests.
     // CSRF is enabled by default.
@@ -123,7 +126,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
-
+/*
     // Setup for persistent users.
     @Autowired
     public DataSource dataSource;
@@ -131,7 +134,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception
     {
-        auth.userDetailsService(jdbcUserDetailsManager()).passwordEncoder(passwordEncoder());
+//        auth.userDetailsService(jdbcUserDetailsManager()).passwordEncoder(passwordEncoder());  // old
+
+        auth.jdbcAuthentication()
+                .dataSource(this.dataSource)
+//                .withDefaultSchema()
+                .withUser(
+                        User.withUsername("bob")
+//                                .passwordEncoder()
+                                .password("thebuilder")
+                                .roles("USER"));
+
     }
 
     @Bean
@@ -159,6 +172,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder()
     {
         return new BCryptPasswordEncoder();
+//        return NoOpPasswordEncoder.getInstance();  // No hash, insecure
     }
-
+*/
 }
