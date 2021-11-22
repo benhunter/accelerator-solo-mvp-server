@@ -1,0 +1,33 @@
+version: "3"
+services:
+  # Client, front end
+  client:
+    image: benhunter/solo-mvp-client:latest
+    ports:
+      - "0.0.0.0:80:3000"
+    depends_on:
+      - server
+
+  # Server, back end
+  server:
+    image: benhunter/solo-mvp-server:latest
+    environment:
+      # Connect to the database container
+      - SPRING_DATASOURCE_URL=jdbc:mysql://database:3306/solomvp?serverTimezone=UTC
+      - SPRING_DATASOURCE_USER=root
+      - SPRING_DATASOURCE_PASS=${ENV_DATABASE_PASS}
+    ports:
+      - "0.0.0.0:8080:8080"
+    depends_on:
+      - database
+
+  # Database
+  database:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${ENV_DATABASE_PASS}
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=solomvp
+    ports:
+      - "127.0.0.1:3306:3306"
+    command: mysqld --lower_case_table_names=1 --skip-ssl --character_set_server=utf8mb4 --explicit_defaults_for_timestamp
