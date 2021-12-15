@@ -1,7 +1,7 @@
 package com.benhunter.solomvpserver;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -16,20 +16,22 @@ public class AlarmChecker {
 
     private int count = 0;
 
-    private static final Logger log = LoggerFactory.getLogger(AlarmChecker.class);
+    private final Logger log;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final AlarmRepository repository;
 
-    AlarmChecker(AlarmRepository repository) {
+    @Autowired
+    AlarmChecker(AlarmRepository repository, final Logger log) {
         this.repository = repository;
+        this.log = log;
     }
 
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
     public void sendLog() {
         log.info("Running @Scheduled method. Count: " + this.count);
-        this.count += 1;
+        this.incrementCount();
     }
 
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.SECONDS)
@@ -73,7 +75,10 @@ public class AlarmChecker {
             try {
                 restTemplate.exchange(webhookRequest, Void.class);  // Not doing anything with the response.
             } catch (IllegalArgumentException exception) {
-                log.info("Bad webhook URL provided for alarm id: " + alarm.getId().toString() + " Exception: " + exception.getMessage());
+                log.info("Bad webhook URL provided for alarm id: "
+                        + alarm.getId().toString()
+                        + " Exception: "
+                        + exception.getMessage());
             }
 
             // Update the alarm.
@@ -103,4 +108,13 @@ public class AlarmChecker {
             this.repository.save(alarm);
         }
     }
+
+    public int getCount() {
+        return count;
+    }
+
+    private void incrementCount() {
+        this.count += 1;
+    }
+
 }
